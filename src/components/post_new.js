@@ -1,22 +1,32 @@
 import React, { Component } from 'react'
 import { Field, reduxForm } from 'redux-form'
+import { Link } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { createPost } from '../actions'
 
 class PostNew extends Component {
 
     renderField(field) {
+
+        const { meta: { touched, error } } = field;
+        const customClass = `from-group ${touched && error ? 'has-danger' : ''}`
+
         return(
-            <div className="form-group has-danger">
+            <div className={customClass}>
                 <label>{field.label}</label>
                 <input type="text" {...field.input} className="form-control"/>
-                <div className="text-help">
-                    {field.meta.touched ? field.meta.error : ''}
+                <div className="form-control-feedback">
+                    {touched ? error : ''}
                 </div>                
             </div>
         );
     }
 
     onSubmit(values) {
-        console.log(values);
+        
+        this.props.createPost(values, () => {
+            this.props.history.push("/");
+        });
     }
 
     render() {
@@ -26,10 +36,15 @@ class PostNew extends Component {
         return(
             <div>
                 <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
-                    <Field label="Title" name="title" component={this.renderField} />
-                    <Field label="Categories" name="categories" component={this.renderField} />
-                    <Field label="Post Content" name="content" component={this.renderField} />
-                    <button type="submit" className="btn btn-primary">Submit</button>
+                    <div className="card mt-5">
+                        <div className="card-block">
+                            <Field label="Title" name="title" component={this.renderField} />
+                            <Field label="Categories" name="categories" component={this.renderField} />
+                            <Field label="Post Content" name="content" component={this.renderField} />
+                            <button type="submit" className="btn btn-primary mr-2">Submit</button>
+                            <Link to="/" className="btn btn-danger">Cancel</Link>
+                        </div>
+                    </div>
                 </form>
             </div>
         );
@@ -58,4 +73,6 @@ function validate(values) {
 export default reduxForm({
     form: 'PostsNewForm',
     validate
-})(PostNew);
+})(
+    connect(null, { createPost })(PostNew)
+);
